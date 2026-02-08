@@ -1,6 +1,8 @@
 import "server-only";
-import { currentUser } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "../supabase/admin";
+
+type ClerkUser = Awaited<ReturnType<typeof clerkClient.users.getUser>>;
 
 type ProfileUpsert = {
   clerk_user_id: string;
@@ -11,7 +13,7 @@ type ProfileUpsert = {
   avatar_url: string | null;
 };
 
-const getPrimaryEmail = (user: NonNullable<Awaited<ReturnType<typeof currentUser>>>) => {
+const getPrimaryEmail = (user: ClerkUser) => {
   return (
     user.emailAddresses.find(
       (email) => email.id === user.primaryEmailAddressId
@@ -19,7 +21,7 @@ const getPrimaryEmail = (user: NonNullable<Awaited<ReturnType<typeof currentUser
   );
 };
 
-const getPrimaryPhone = (user: NonNullable<Awaited<ReturnType<typeof currentUser>>>) => {
+const getPrimaryPhone = (user: ClerkUser) => {
   return (
     user.phoneNumbers.find(
       (phone) => phone.id === user.primaryPhoneNumberId
@@ -27,11 +29,8 @@ const getPrimaryPhone = (user: NonNullable<Awaited<ReturnType<typeof currentUser
   );
 };
 
-export const syncProfileForCurrentUser = async () => {
-  const user = await currentUser();
-  if (!user) {
-    return null;
-  }
+export const syncProfileForUser = async (userId: string) => {
+  const user = await clerkClient.users.getUser(userId);
 
   const email = getPrimaryEmail(user);
   if (!email) {
@@ -39,7 +38,7 @@ export const syncProfileForCurrentUser = async () => {
   }
 
   const profilePayload: ProfileUpsert = {
-    clerk_user_id: user.id,
+    clerk_user_id: userId,
     email,
     phone: getPrimaryPhone(user),
     name:
@@ -52,7 +51,7 @@ export const syncProfileForCurrentUser = async () => {
   const { data: existingProfile, error: existingError } = await supabaseAdmin
     .from("profiles")
     .select("id")
-    .eq("clerk_user_id", user.id)
+    .eq("clerk_user_id", userId)
     .maybeSingle();
 
   if (existingError) {
@@ -63,7 +62,7 @@ export const syncProfileForCurrentUser = async () => {
     const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update(profilePayload)
-      .eq("clerk_user_id", user.id);
+      .eq("clerk_user_id", userId);
 
     if (updateError) {
       throw updateError;
@@ -81,7 +80,7 @@ export const syncProfileForCurrentUser = async () => {
   const expectedAdminEmail = process.env.ADMIN_SEED_EMAIL ?? null;
   if (expectedAdminEmail) {
     const { error: seedError } = await supabaseAdmin.rpc("seed_admin_if_none", {
-      p_clerk_user_id: user.id,
+      p_clerk_user_id: userId,
       p_expected_admin_email: expectedAdminEmail,
       p_user_email: email,
     });
