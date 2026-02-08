@@ -24,10 +24,26 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkJsUrl = (() => {
+    if (!publishableKey) return undefined;
+    const keyParts = publishableKey.split("_");
+    if (keyParts.length < 3) return undefined;
+    const encoded = keyParts.slice(2).join("_");
+    const padded = encoded + "===".slice((encoded.length + 3) % 4);
+    try {
+      const decoded = Buffer.from(padded, "base64").toString("utf-8");
+      const domain = decoded.replace(/\$+$/, "");
+      if (!domain.includes("clerk.accounts")) return undefined;
+      return `https://${domain}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
+    } catch {
+      return undefined;
+    }
+  })();
 
   return (
     <ClerkProvider
       publishableKey={publishableKey}
+      clerkJSUrl={clerkJsUrl}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       afterSignInUrl="/classes"
