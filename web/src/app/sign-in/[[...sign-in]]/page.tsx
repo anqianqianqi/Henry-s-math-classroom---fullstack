@@ -15,7 +15,18 @@ export default function SignInPage() {
         </>
       }
     >
-      <SignIn />
+      <SignIn
+        path="/sign-in"
+        routing="path"
+        signUpUrl="/sign-up"
+        appearance={{
+          elements: {
+            rootBox: "w-full",
+            card: "w-full shadow-none border-0 p-0",
+            headerTitle: "text-2xl",
+          },
+        }}
+      />
     </AuthShell>
   );
 }

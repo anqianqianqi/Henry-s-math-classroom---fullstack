@@ -13,7 +13,7 @@ export default function AuthShell({
 }: AuthShellProps) {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 md:grid md:grid-cols-[1.1fr_0.9fr] md:items-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 md:grid md:grid-cols-[1.05fr_0.95fr] md:items-center">
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
             Henry’s Math Classroom
@@ -28,9 +28,17 @@ export default function AuthShell({
               <li>Track progress and daily challenges</li>
             </ul>
           </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            <p className="font-medium text-slate-900">Verification steps</p>
+            <p className="mt-2">
+              Clerk will guide you through email verification or additional
+              checks when required. The form below will expand to handle those
+              steps.
+            </p>
+          </div>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          {children}
+          <div className="w-full">{children}</div>
           {footer ? <div className="mt-6 text-sm text-slate-600">{footer}</div> : null}
         </div>
       </div>
