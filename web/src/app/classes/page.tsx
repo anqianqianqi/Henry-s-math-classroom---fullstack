@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import RequestClassCard from "./RequestClassCard";
 
 type ClassRecord = {
@@ -21,7 +21,7 @@ const groupByGradeRange = (classes: ClassRecord[]) => {
 };
 
 export default async function ClassesPage() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabasePublicClient();
   const { data: classes, error } = await supabase
     .from("classes")
     .select(
