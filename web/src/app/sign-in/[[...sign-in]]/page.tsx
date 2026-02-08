@@ -6,6 +6,7 @@ export default function SignInPage() {
     <AuthShell
       title="Welcome back"
       description="Sign in to continue requesting classes and tracking student progress."
+      hostedPath="/sign-in"
       footer={
         <>
           New to Henry’s Math Classroom?{" "}

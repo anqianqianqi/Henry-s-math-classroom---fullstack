@@ -3,6 +3,7 @@ type AuthShellProps = {
   description: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  hostedPath?: "/sign-in" | "/sign-up";
 };
 
 export default function AuthShell({
@@ -10,7 +11,26 @@ export default function AuthShell({
   description,
   children,
   footer,
+  hostedPath,
 }: AuthShellProps) {
+  const hostedUrl = (() => {
+    if (!hostedPath) return null;
+    const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    if (!key) return null;
+    const parts = key.split("_");
+    if (parts.length < 3) return null;
+    const encoded = parts.slice(2).join("_");
+    const padded = encoded + "===".slice((encoded.length + 3) % 4);
+    try {
+      const decoded = Buffer.from(padded, "base64").toString("utf-8");
+      const domain = decoded.replace(/\$+$/, "");
+      if (!domain.includes("clerk.accounts")) return null;
+      return `https://${domain}${hostedPath}`;
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 md:grid md:grid-cols-[1.05fr_0.95fr] md:items-center">
@@ -40,6 +60,15 @@ export default function AuthShell({
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="w-full">{children}</div>
           {footer ? <div className="mt-6 text-sm text-slate-600">{footer}</div> : null}
+          {hostedUrl ? (
+            <div className="mt-4 text-xs text-slate-500">
+              Having trouble loading the embedded form?{" "}
+              <a className="font-semibold text-indigo-600" href={hostedUrl}>
+                Open the hosted page
+              </a>
+              .
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

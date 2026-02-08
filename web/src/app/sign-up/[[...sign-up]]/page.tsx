@@ -6,6 +6,7 @@ export default function SignUpPage() {
     <AuthShell
       title="Create your account"
       description="Get started with class exploration, enrollments, and daily challenges."
+      hostedPath="/sign-up"
       footer={
         <>
           Already have an account?{" "}
