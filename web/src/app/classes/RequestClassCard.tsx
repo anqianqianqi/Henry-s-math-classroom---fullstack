@@ -1,13 +1,64 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { requestClass } from "./actions";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
+import { useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type RequestClassCardProps = {
   gradeRange: string;
 };
 
 export default function RequestClassCard({ gradeRange }: RequestClassCardProps) {
+  const { getToken } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setIsSuccess(false);
+
+    const formData = new FormData(event.currentTarget);
+    const subject = formData.get("subject")?.toString().trim();
+    const details = formData.get("details")?.toString().trim() || null;
+    const preferredClassSize = Number.parseInt(
+      formData.get("preferred_class_size")?.toString() ?? "",
+      10
+    );
+
+    if (!subject || Number.isNaN(preferredClassSize)) {
+      setErrorMessage("Please fill out the required fields.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const token = await getToken({ template: "supabase" });
+    if (!token) {
+      setErrorMessage("Unable to authenticate. Please sign in again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const supabase = createSupabaseBrowserClient(token);
+    const { error } = await supabase.from("class_requests").insert({
+      grade_range: gradeRange,
+      subject,
+      details,
+      preferred_class_size: preferredClassSize,
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+    } else {
+      event.currentTarget.reset();
+      setIsSuccess(true);
+    }
+
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4">
       <div className="text-sm font-semibold text-slate-700">
@@ -29,7 +80,7 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
         </div>
       </SignedOut>
       <SignedIn>
-        <form className="mt-4 grid gap-3" action={requestClass}>
+        <form className="mt-4 grid gap-3" onSubmit={handleSubmit}>
           <input type="hidden" name="grade_range" value={gradeRange} />
           <label className="grid gap-1 text-sm text-slate-700">
             Subject
@@ -60,8 +111,19 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
               className="rounded-md border border-slate-200 px-3 py-2 text-sm"
             />
           </label>
-          <button className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white">
-            Submit request
+          {errorMessage ? (
+            <p className="text-xs text-rose-600">{errorMessage}</p>
+          ) : null}
+          {isSuccess ? (
+            <p className="text-xs text-emerald-600">
+              Request submitted. We will follow up soon.
+            </p>
+          ) : null}
+          <button
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit request"}
           </button>
         </form>
       </SignedIn>
