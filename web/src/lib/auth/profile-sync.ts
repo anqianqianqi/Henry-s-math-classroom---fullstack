@@ -42,7 +42,9 @@ export const syncProfileForCurrentUser = async () => {
     clerk_user_id: user.id,
     email,
     phone: getPrimaryPhone(user),
-    name: user.fullName ?? [user.firstName, user.lastName].filter(Boolean).join(" ") || null,
+    name:
+      user.fullName ??
+      ([user.firstName, user.lastName].filter(Boolean).join(" ") || null),
     username: user.username ?? null,
     avatar_url: user.imageUrl ?? null,
   };
