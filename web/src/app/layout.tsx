@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { syncProfileForUser } from "../lib/auth/profile-sync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,11 +23,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { userId } = await auth();
-  if (userId) {
-    await syncProfileForUser(userId);
-  }
-
   return (
     <ClerkProvider>
       <html lang="en">

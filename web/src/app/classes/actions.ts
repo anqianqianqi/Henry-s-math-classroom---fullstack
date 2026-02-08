@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { syncProfileForUser } from "@/lib/auth/profile-sync";
 
 const parsePreferredClassSize = (value: FormDataEntryValue | null) => {
   if (!value) return null;
@@ -10,10 +11,12 @@ const parsePreferredClassSize = (value: FormDataEntryValue | null) => {
 };
 
 export const requestClass = async (formData: FormData) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) {
     throw new Error("You must be signed in to request a class.");
   }
+
+  await syncProfileForUser(userId);
 
   const gradeRange = formData.get("grade_range")?.toString().trim();
   const subject = formData.get("subject")?.toString().trim();
