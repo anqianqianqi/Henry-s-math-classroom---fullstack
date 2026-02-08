@@ -1,3 +1,4 @@
+import { SignInButton } from "@clerk/nextjs";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import RequestClassCard from "./RequestClassCard";
 
@@ -49,11 +50,21 @@ export default async function ClassesPage() {
             Browse by grade band, explore class options, or request a new class
             for your age group.
           </p>
+          <div>
+            <SignInButton mode="modal">
+              <button className="rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700">
+                Sign in
+              </button>
+            </SignInButton>
+          </div>
         </header>
 
         {gradeRanges.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-sm text-slate-600">
-            No classes have been published yet.
+          <div className="grid gap-4">
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-sm text-slate-600">
+              No classes have been published yet.
+            </div>
+            <RequestClassCard />
           </div>
         ) : (
           <div className="space-y-4">

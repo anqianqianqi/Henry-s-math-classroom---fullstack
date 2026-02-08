@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type RequestClassCardProps = {
-  gradeRange: string;
+  gradeRange?: string;
 };
 
 export default function RequestClassCard({ gradeRange }: RequestClassCardProps) {
@@ -21,6 +21,8 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
     setIsSuccess(false);
 
     const formData = new FormData(event.currentTarget);
+    const submittedGradeRange =
+      gradeRange ?? formData.get("grade_range")?.toString().trim();
     const subject = formData.get("subject")?.toString().trim();
     const details = formData.get("details")?.toString().trim() || null;
     const preferredClassSize = Number.parseInt(
@@ -28,7 +30,7 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
       10
     );
 
-    if (!subject || Number.isNaN(preferredClassSize)) {
+    if (!submittedGradeRange || !subject || Number.isNaN(preferredClassSize)) {
       setErrorMessage("Please fill out the required fields.");
       setIsSubmitting(false);
       return;
@@ -43,7 +45,7 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
 
     const supabase = createSupabaseBrowserClient(token);
     const { error } = await supabase.from("class_requests").insert({
-      grade_range: gradeRange,
+      grade_range: submittedGradeRange,
       subject,
       details,
       preferred_class_size: preferredClassSize,
@@ -65,7 +67,7 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
         Request Additional Class
       </div>
       <div className="mt-1 text-xs text-slate-500">
-        Grade range: {gradeRange}
+        {gradeRange ? `Grade range: ${gradeRange}` : "Select a grade range"}
       </div>
       <SignedOut>
         <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
@@ -81,7 +83,29 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
       </SignedOut>
       <SignedIn>
         <form className="mt-4 grid gap-3" onSubmit={handleSubmit}>
-          <input type="hidden" name="grade_range" value={gradeRange} />
+          {gradeRange ? (
+            <input type="hidden" name="grade_range" value={gradeRange} />
+          ) : (
+            <label className="grid gap-1 text-sm text-slate-700">
+              Grade range
+              <select
+                name="grade_range"
+                required
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Select a range
+                </option>
+                <option value="Grade 1–2">Grade 1–2</option>
+                <option value="Grade 3–4">Grade 3–4</option>
+                <option value="Grade 5–6">Grade 5–6</option>
+                <option value="Grade 7–8">Grade 7–8</option>
+                <option value="Grade 9–10">Grade 9–10</option>
+                <option value="Grade 11–12">Grade 11–12</option>
+              </select>
+            </label>
+          )}
           <label className="grid gap-1 text-sm text-slate-700">
             Subject
             <input
