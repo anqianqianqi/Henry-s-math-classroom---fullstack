@@ -1,4 +1,3 @@
-import { SignInButton } from "@clerk/nextjs";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import RequestClassCard from "./RequestClassCard";
 
@@ -51,11 +50,12 @@ export default async function ClassesPage() {
             for your age group.
           </p>
           <div>
-            <SignInButton mode="modal">
-              <button className="rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700">
-                Sign in
-              </button>
-            </SignInButton>
+            <a
+              href="/sign-in"
+              className="inline-flex rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700"
+            >
+              Sign in
+            </a>
           </div>
         </header>
 

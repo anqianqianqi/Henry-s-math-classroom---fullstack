@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -73,11 +73,12 @@ export default function RequestClassCard({ gradeRange }: RequestClassCardProps) 
         <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
           Please sign in to request a class.
           <div className="mt-2">
-            <SignInButton mode="modal">
-              <button className="rounded-md bg-slate-900 px-3 py-1.5 text-sm text-white">
-                Sign in
-              </button>
-            </SignInButton>
+            <a
+              href="/sign-in"
+              className="inline-flex rounded-md bg-slate-900 px-3 py-1.5 text-sm text-white"
+            >
+              Sign in
+            </a>
           </div>
         </div>
       </SignedOut>
